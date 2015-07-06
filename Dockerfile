@@ -39,11 +39,12 @@ RUN \
   ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER}
 
 RUN  \
-     git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
-     cd ${KIEKER_EUREKA_FOLDER} && \
-     ./gradlew -x check -x test clean war  && \
-     cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
-     rm ${KIEKER_EUREKA_FOLDER} -r
+  git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
+  cd ${KIEKER_EUREKA_FOLDER} && \
+  ./gradlew -x check -x test clean war  && \
+  cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
+  rm ${KIEKER_EUREKA_FOLDER} -r && \
+  rm /root/.gradle -r
   
 WORKDIR /opt
 
