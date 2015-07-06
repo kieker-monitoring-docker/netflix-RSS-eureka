@@ -35,19 +35,21 @@ COPY ${KIEKER_AOP} ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP}
 RUN \
   mkdir -p ${KIEKER_AGENT_FOLDER} && \
   mkdir -p ${KIEKER_LOGS_FOLDER} && \
-  mkdir -p ${KIEKER_TOMCAT_METAINF_FOLDER}
+  mkdir -p ${KIEKER_TOMCAT_METAINF_FOLDER} && \
+  ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER}
+
+RUN  \
+     git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
+     cd ${KIEKER_EUREKA_FOLDER} && \
+     ./gradlew -x check -x test clean war  && \
+     cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
+     rm ${KIEKER_EUREKA_FOLDER} -r
   
+WORKDIR /opt
+
 ENV KIEKER_VERSION 1.12-20150706.003609-88
 ENV KIEKER_AGENT_JAR_SRC kieker-${KIEKER_VERSION}-aspectj.jar
 ENV KIEKER_AGENT_BASE_URL "https://oss.sonatype.org/content/groups/staging/net/kieker-monitoring/kieker/1.12-SNAPSHOT"
-
-RUN git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER}
-WORKDIR ${KIEKER_EUREKA_FOLDER}
-RUN  \
-  ./gradlew -x check -x test clean war  && \
-  ln -s /eureka/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka.war
-  
-WORKDIR /opt
   
 RUN \
   wget -q "${KIEKER_AGENT_BASE_URL}/${KIEKER_AGENT_JAR_SRC}" -O "${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR}" && \
