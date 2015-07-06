@@ -1,0 +1,26 @@
+<!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.aspectj.org/dtd/aspectj_1_5_0.dtd">
+<aspectj>
+	<weaver options="">
+		<include within="com.sun.jersey.server.impl.application.WebApplicationImpl"/>
+		<include within="com.sun.jersey.spi.container.ContainerResponse"/>
+		<include within="com.sun.jersey.client.apache4.ApacheHttpClient4Handler"/>
+		<!--<include within="com.netflix..*"/>-->
+	</weaver>
+	<aspects>
+		<!-- Use the aspect directives to specify the aspect(s) to use (typically only one). -->
+		<!--<aspect name="kieker.monitoring.probe.aspectj.operationExecution.OperationExecutionAspectAnnotation"/>-->
+		<!--<aspect name="kieker.monitoring.probe.aspectj.operationExecution.OperationExecutionAspectAnnotationServlet"/>-->
+		<!--<aspect name="kieker.monitoring.probe.aspectj.operationExecution.OperationExecutionAspectFull"/>-->
+		<!--<aspect name="kieker.monitoring.probe.aspectj.operationExecution.OperationExecutionAspectFullNoConstructor"/>-->
+		<!--<aspect name="kieker.monitoring.probe.aspect.JoperationExecution.OperationExecutionAspectFullServlet"/>-->
+
+		<aspect name="kieker.monitoring.probe.aspectj.jersey.OperationExecutionJerseyClientInterceptor"/>
+		<aspect name="kieker.monitoring.probe.aspectj.jersey.OperationExecutionJerseyServerInterceptor"/>
+		<!--
+		<concrete-aspect name="kieker.monitoring.probe.aspectj.operationExecution.TargetedAspect" extends="kieker.monitoring.probe.aspectj.operationExecution.AbstractOperationExecutionAspect">
+			<pointcut name="monitoredOperation" expression="execution(* com.netflix.discovery..*(..))
+				|| execution(* com.netflix.eureka..*(..))" />
+		</concrete-aspect>
+		-->
+	</aspects>
+</aspectj>
