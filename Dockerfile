@@ -4,7 +4,7 @@ MAINTAINER http://kieker-monitoring.net/support/
 
 RUN \
   apt-get update && \
-  apt-get install openjdk-7-jdk git -y
+  apt-get install openjdk-7-jdk git zip unzip -y
 
 WORKDIR /opt
 
@@ -17,9 +17,11 @@ ENV KIEKER_FOLDER /opt/kieker
 ENV KIEKER_AGENT_FOLDER ${KIEKER_FOLDER}/agent
 ENV KIEKER_CONFIG_FOLDER ${KIEKER_FOLDER}/config
 ENV KIEKER_LOGS_FOLDER ${KIEKER_FOLDER}/logs
+ENV KIEKER_LIB_FOLDER ${KIEKER_FOLDER}/lib
 ENV KIEKER_WEBAPPS_FOLDER ${KIEKER_FOLDER}/webapps
-ENV KIEKER_TOMCAT_METAINF_FOLDER /usr/local/tomcat/lib/META-INF
-ENV KIEKER_TOMCAT_WEBAPPS_FOLDER /usr/local/tomcat/webapps
+ENV KIEKER_TOMCAT_FOLDER /usr/local/tomcat
+ENV KIEKER_TOMCAT_METAINF_FOLDER ${KIEKER_TOMCAT_FOLDER}/lib/META-INF
+ENV KIEKER_TOMCAT_WEBAPPS_FOLDER ${KIEKER_TOMCAT_FOLDER}/webapps
 
 ENV KIEKER_EUREKA_FOLDER ${KIEKER_FOLDER}/eureka
 ENV KIEKER_EUREKA_GIT "https://github.com/Netflix/eureka"
@@ -31,19 +33,26 @@ ENV KIEKER_AOP aop.xml
 
 COPY ${KIEKER_MONITORING_PROPERTIES} ${KIEKER_CONFIG_FOLDER}/${KIEKER_MONITORING_PROPERTIES}
 COPY ${KIEKER_AOP} ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP}
+COPY lib/* ${KIEKER_LIB_FOLDER}/
 
 RUN \
   mkdir -p ${KIEKER_AGENT_FOLDER} && \
   mkdir -p ${KIEKER_LOGS_FOLDER} && \
   mkdir -p ${KIEKER_TOMCAT_METAINF_FOLDER} && \
-  ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER}
+  ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER} && \
+  cp ${KIEKER_LIB_FOLDER}/* /usr/local/tomcat/lib/
 
-RUN  \
+RUN \
   git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
   cd ${KIEKER_EUREKA_FOLDER} && \
-  ./gradlew -x check -x test clean war  && \
+  ./gradlew -x check -x test clean build
+
+RUN \
   cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
+  cd ${KIEKER_WEBAPPS_FOLDER} && \
+  unzip eureka.war -d eureka/ && \
   rm ${KIEKER_EUREKA_FOLDER} -r && \
+  rm ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   rm /root/.gradle -r
   
 WORKDIR /opt
@@ -54,6 +63,14 @@ ENV KIEKER_AGENT_BASE_URL "https://oss.sonatype.org/content/groups/staging/net/k
   
 RUN \
   wget -q "${KIEKER_AGENT_BASE_URL}/${KIEKER_AGENT_JAR_SRC}" -O "${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR}" && \
+  cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_FOLDER}/${KIEKER_AGENT_JAR} && \
+  cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_FOLDER}/lib/${KIEKER_AGENT_JAR} && \
+  mkdir -p ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib && \
+  cp ${KIEKER_LIB_FOLDER}/* ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/ && \
+  cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/${KIEKER_AGENT_JAR} && \
+  cd ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka && \
+  zip -r ../eureka.war . && \
+  rm ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/ -r && \
   ln -s ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP} ${KIEKER_TOMCAT_METAINF_FOLDER}/${KIEKER_AOP} && \
   sed -i '250i\'"export KIEKER_JAVA_OPTS=\" \
     -javaagent:${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} \
