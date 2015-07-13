@@ -46,7 +46,7 @@ RUN \
   ./gradlew -x check -x test clean build && \
   cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   cd ${KIEKER_WEBAPPS_FOLDER} && \
-  unzip eureka.war -d eureka/ && \
+  unzip -q eureka.war -d eureka/ && \
   rm ${KIEKER_EUREKA_FOLDER} -r && \
   rm ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   rm /root/.gradle -r
@@ -65,7 +65,7 @@ RUN \
   cp ${KIEKER_LIB_FOLDER}/* ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/ && \
   cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/${KIEKER_AGENT_JAR} && \
   cd ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka && \
-  zip -r ../eureka.war . && \
+  zip -q -r ../eureka.war . && \
   rm ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/ -r && \
   ln -s ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP} ${KIEKER_TOMCAT_METAINF_FOLDER}/${KIEKER_AOP} && \
   sed -i '250i\'"export KIEKER_JAVA_OPTS=\" \
