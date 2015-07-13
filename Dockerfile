@@ -40,14 +40,10 @@ RUN \
   mkdir -p ${KIEKER_LOGS_FOLDER} && \
   mkdir -p ${KIEKER_TOMCAT_METAINF_FOLDER} && \
   ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER} && \
-  cp ${KIEKER_LIB_FOLDER}/* /usr/local/tomcat/lib/
-
-RUN \
+  cp ${KIEKER_LIB_FOLDER}/* /usr/local/tomcat/lib/ && \
   git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
   cd ${KIEKER_EUREKA_FOLDER} && \
-  ./gradlew -x check -x test clean build
-
-RUN \
+  ./gradlew -x check -x test clean build && \
   cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   cd ${KIEKER_WEBAPPS_FOLDER} && \
   unzip eureka.war -d eureka/ && \
