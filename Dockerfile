@@ -8,14 +8,13 @@ RUN \
 
 WORKDIR /opt
 
-CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
-
 EXPOSE 8080
 
 # Set folder variables
 ENV KIEKER_FOLDER /opt/kieker
 ENV KIEKER_AGENT_FOLDER ${KIEKER_FOLDER}/agent
 ENV KIEKER_CONFIG_FOLDER ${KIEKER_FOLDER}/config
+ENV KIEKER_TMP_CONFIG_FOLDER ${KIEKER_FOLDER}/tmp-config
 ENV KIEKER_LOGS_FOLDER ${KIEKER_FOLDER}/logs
 ENV KIEKER_LIB_FOLDER ${KIEKER_FOLDER}/lib
 ENV KIEKER_WEBAPPS_FOLDER ${KIEKER_FOLDER}/webapps
@@ -31,8 +30,8 @@ ENV KIEKER_MONITORING_PROPERTIES kieker.monitoring.properties
 ENV KIEKER_AGENT_JAR agent.jar
 ENV KIEKER_AOP aop.xml
 
-COPY ${KIEKER_MONITORING_PROPERTIES} ${KIEKER_CONFIG_FOLDER}/${KIEKER_MONITORING_PROPERTIES}
-COPY ${KIEKER_AOP} ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP}
+COPY ${KIEKER_MONITORING_PROPERTIES} ${KIEKER_TMP_CONFIG_FOLDER}/${KIEKER_MONITORING_PROPERTIES}
+COPY ${KIEKER_AOP} ${KIEKER_TMP_CONFIG_FOLDER}/${KIEKER_AOP}
 COPY lib/* ${KIEKER_LIB_FOLDER}/
 
 RUN \
@@ -67,7 +66,6 @@ RUN \
   cd ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka && \
   zip -q -r ../eureka.war . && \
   rm ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/ -r && \
-  ln -s ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP} ${KIEKER_TOMCAT_METAINF_FOLDER}/${KIEKER_AOP} && \
   sed -i '250i\'"export KIEKER_JAVA_OPTS=\" \
     -javaagent:${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} \
     -Dkieker.monitoring.configuration=${KIEKER_CONFIG_FOLDER}/${KIEKER_MONITORING_PROPERTIES} \
@@ -76,5 +74,11 @@ RUN \
     -Dkieker.monitoring.skipDefaultAOPConfiguration=true \
     \"" /usr/local/tomcat/bin/catalina.sh && \
   sed -i '251i\'"export JAVA_OPTS=\"\${KIEKER_JAVA_OPTS} \${JAVA_OPTS}\"" /usr/local/tomcat/bin/catalina.sh
+
+CMD \
+  mv ${KIEKER_TMP_CONFIG_FOLDER}/* ${KIEKER_CONFIG_FOLDER}/ && \
+  rm ${KIEKER_TMP_CONFIG_FOLDER} -r && \
+  ln -s ${KIEKER_CONFIG_FOLDER}/${KIEKER_AOP} ${KIEKER_TOMCAT_METAINF_FOLDER}/${KIEKER_AOP} && \
+  /usr/local/tomcat/bin/catalina.sh run
 
 VOLUME ["/opt/kieker"]
