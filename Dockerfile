@@ -52,7 +52,7 @@ RUN \
   
 WORKDIR /opt
 
-ENV KIEKER_VERSION 1.12-20150812.004113-128
+ENV KIEKER_VERSION 1.12-20150813.004411-129
 ENV KIEKER_AGENT_JAR_SRC kieker-${KIEKER_VERSION}-aspectj.jar
 ENV KIEKER_AGENT_BASE_URL "https://oss.sonatype.org/content/groups/staging/net/kieker-monitoring/kieker/1.12-SNAPSHOT"
   
