@@ -4,7 +4,7 @@ MAINTAINER http://kieker-monitoring.net/support/
 
 RUN \
   apt-get update && \
-  apt-get install openjdk-7-jdk git zip unzip -y
+  apt-get install openjdk-7-jdk zip unzip -y
 
 WORKDIR /opt
 
@@ -22,13 +22,11 @@ ENV KIEKER_TOMCAT_FOLDER /usr/local/tomcat
 ENV KIEKER_TOMCAT_METAINF_FOLDER ${KIEKER_TOMCAT_FOLDER}/lib/META-INF
 ENV KIEKER_TOMCAT_WEBAPPS_FOLDER ${KIEKER_TOMCAT_FOLDER}/webapps
 
-ENV KIEKER_EUREKA_FOLDER ${KIEKER_FOLDER}/eureka
-ENV KIEKER_EUREKA_GIT "https://github.com/Netflix/eureka"
-
 # Set other variables
 ENV KIEKER_MONITORING_PROPERTIES kieker.monitoring.properties
 ENV KIEKER_AGENT_JAR agent.jar
 ENV KIEKER_AOP aop.xml
+ENV KIEKER_EUREKA_VERSION 1.2.4
 
 COPY ${KIEKER_MONITORING_PROPERTIES} ${KIEKER_TMP_CONFIG_FOLDER}/${KIEKER_MONITORING_PROPERTIES}
 COPY ${KIEKER_AOP} ${KIEKER_TMP_CONFIG_FOLDER}/META-INF/${KIEKER_AOP}
@@ -40,13 +38,9 @@ RUN \
   mkdir -p ${KIEKER_TOMCAT_METAINF_FOLDER} && \
   ln -s ${KIEKER_TOMCAT_WEBAPPS_FOLDER} ${KIEKER_WEBAPPS_FOLDER} && \
   cp ${KIEKER_LIB_FOLDER}/* /usr/local/tomcat/lib/ && \
-  git clone ${KIEKER_EUREKA_GIT} ${KIEKER_EUREKA_FOLDER} && \
-  cd ${KIEKER_EUREKA_FOLDER} && \
-  ./gradlew -x check -x test clean build && \
-  cp ${KIEKER_EUREKA_FOLDER}/eureka-server/build/libs/eureka-server*SNAPSHOT.war ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
+  wget "http://central.maven.org/maven2/com/netflix/eureka/eureka-server/${KIEKER_EUREKA_VERSION}/eureka-server-${KIEKER_EUREKA_VERSION}.war" -O ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   cd ${KIEKER_WEBAPPS_FOLDER} && \
   unzip -q eureka.war -d eureka/ && \
-  rm ${KIEKER_EUREKA_FOLDER} -r && \
   rm ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   rm /root/.gradle -r
   
@@ -58,8 +52,6 @@ ENV KIEKER_AGENT_BASE_URL "https://oss.sonatype.org/content/groups/staging/net/k
   
 RUN \
   wget -q "${KIEKER_AGENT_BASE_URL}/${KIEKER_AGENT_JAR_SRC}" -O "${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR}" && \
-  # cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_FOLDER}/${KIEKER_AGENT_JAR} && \
-  # cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_FOLDER}/lib/${KIEKER_AGENT_JAR} && \
   mkdir -p ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib && \
   cp ${KIEKER_LIB_FOLDER}/* ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/ && \
   cp ${KIEKER_AGENT_FOLDER}/${KIEKER_AGENT_JAR} ${KIEKER_TOMCAT_WEBAPPS_FOLDER}/eureka/WEB-INF/lib/${KIEKER_AGENT_JAR} && \
