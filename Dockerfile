@@ -41,8 +41,7 @@ RUN \
   wget "http://central.maven.org/maven2/com/netflix/eureka/eureka-server/${KIEKER_EUREKA_VERSION}/eureka-server-${KIEKER_EUREKA_VERSION}.war" -O ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
   cd ${KIEKER_WEBAPPS_FOLDER} && \
   unzip -q eureka.war -d eureka/ && \
-  rm ${KIEKER_WEBAPPS_FOLDER}/eureka.war && \
-  rm /root/.gradle -r
+  rm ${KIEKER_WEBAPPS_FOLDER}/eureka.war
   
 WORKDIR /opt
 
