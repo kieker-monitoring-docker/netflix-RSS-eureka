@@ -1,10 +1,10 @@
-FROM tomcat
+FROM tomcat:8.0-jre7
 
 MAINTAINER http://kieker-monitoring.net/support/
 
 RUN \
   apt-get update && \
-  apt-get install openjdk-7-jdk zip unzip -y
+  apt-get install zip unzip -y
 
 WORKDIR /opt
 
